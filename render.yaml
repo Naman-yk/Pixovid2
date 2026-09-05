@@ -89,12 +89,11 @@ services:
         fromService:
           type: web
           name: pixovid-backend
-          property: url
+          property: host
 
 databases:
   # Managed PostgreSQL Database
   - name: pixovid-db
     databaseName: video_arena
-    user: postgres
     region: singapore
     plan: free
