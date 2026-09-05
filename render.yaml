@@ -5,7 +5,7 @@ version: "1"
 services:
   # 1. Express Backend Web Service
   - type: web
-    name: pixovid-backend
+    name: pixovid-api-v2
     runtime: docker
     dockerfilePath: apps/backend/Dockerfile
     dockerContext: .
@@ -76,7 +76,7 @@ services:
 
   # 2. Vite Frontend Web Service (Nginx)
   - type: web
-    name: pixovid-frontend
+    name: pixovid-ui-v2
     runtime: docker
     dockerfilePath: apps/frontend/Dockerfile
     dockerContext: .
@@ -86,5 +86,5 @@ services:
       - key: VITE_API_URL
         fromService:
           type: web
-          name: pixovid-backend
+          name: pixovid-api-v2
           property: host
