@@ -18,9 +18,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: pixovid-db
-          property: connectionString
+        sync: false
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: BACKEND_URL
@@ -90,10 +88,3 @@ services:
           type: web
           name: pixovid-backend
           property: host
-
-databases:
-  # Managed PostgreSQL Database
-  - name: pixovid-db
-    databaseName: video_arena
-    region: singapore
-    plan: free
