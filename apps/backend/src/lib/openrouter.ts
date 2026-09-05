@@ -168,6 +168,8 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         }));
     }
 
+    let primaryErrorDetail = "";
+
     try {
         const res = await fetch(`${BASE_URL}/images`, {
             method: "POST",
@@ -194,25 +196,40 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
             }
         } else {
             const errorText = await res.text().catch(() => "");
+            primaryErrorDetail = `OpenRouter API HTTP ${res.status}: ${errorText || res.statusText}`;
             console.warn(`OpenRouter image generation returned HTTP ${res.status}: ${errorText}`);
         }
-    } catch (err) {
+    } catch (err: any) {
+        primaryErrorDetail = err?.message || String(err);
         console.warn("OpenRouter image generation failed, falling back to free provider:", err);
     }
 
     // Free AI Fallback (Pollinations.ai — 100% free high-quality AI images)
     console.log(`[Free AI Fallback] Generating image for prompt: "${params.prompt}"`);
     const freeImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(params.prompt)}?width=1024&height=1024&nologo=true`;
-    const fallbackRes = await fetch(freeImageUrl);
-    if (!fallbackRes.ok) {
-        throw new Error(`Free AI image generation failed: ${fallbackRes.status}`);
+    try {
+        const fallbackRes = await fetch(freeImageUrl, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
+            }
+        });
+        if (fallbackRes.ok) {
+            const buffer = Buffer.from(await fallbackRes.arrayBuffer());
+            return {
+                buffer,
+                contentType: fallbackRes.headers.get("content-type") ?? "image/jpeg",
+                cost: 0,
+            };
+        } else {
+            console.warn(`Pollinations fallback returned HTTP ${fallbackRes.status}`);
+        }
+    } catch (fallbackErr) {
+        console.warn("Pollinations fallback failed:", fallbackErr);
     }
-    const buffer = Buffer.from(await fallbackRes.arrayBuffer());
-    return {
-        buffer,
-        contentType: fallbackRes.headers.get("content-type") ?? "image/jpeg",
-        cost: 0,
-    };
+
+    const detailMsg = primaryErrorDetail ? ` (${primaryErrorDetail})` : "";
+    throw new Error(`Image generation failed on primary and fallback providers${detailMsg}`);
 
 
 
