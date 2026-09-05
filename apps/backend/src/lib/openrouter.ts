@@ -158,9 +158,8 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         prompt: params.prompt,
 
     };
-    if (params.resolution) body.resolution = params.resolution;
-
-    if (params.aspectRatio) body.aspect_ratio = params.aspectRatio;
+    if (params.resolution && params.resolution !== "Auto") body.resolution = params.resolution;
+    if (params.aspectRatio && params.aspectRatio !== "Auto") body.aspect_ratio = params.aspectRatio;
 
     if (params.references && params.references.length > 0) {
         body.input_references = params.references.map((ref) => ({
@@ -193,6 +192,9 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
                     };
                 }
             }
+        } else {
+            const errorText = await res.text().catch(() => "");
+            console.warn(`OpenRouter image generation returned HTTP ${res.status}: ${errorText}`);
         }
     } catch (err) {
         console.warn("OpenRouter image generation failed, falling back to free provider:", err);
