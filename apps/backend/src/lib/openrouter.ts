@@ -202,6 +202,14 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         throw new Error("Image generation returned an empty result. Please try a different prompt.");
     }
 
+function sanitizeErrorMessage(msg: string): string {
+    if (!msg) return "";
+    if (/(openrouter|insufficient credits|settings\/credits|add credits at)/i.test(msg)) {
+        return "Insufficient credits to generate. Please add credits to continue.";
+    }
+    return msg;
+}
+
     // --- Error path: parse OpenRouter error for user-friendly messages ---
     const errorText = await res.text().catch(() => "");
     console.error(`[Image Gen] OpenRouter HTTP ${res.status} for model ${params.model}: ${errorText}`);
@@ -209,39 +217,38 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
     let parsedMsg = "";
     try {
         const errJson = JSON.parse(errorText);
-        parsedMsg = typeof errJson.error === "string"
+        const raw = typeof errJson.error === "string"
             ? errJson.error
             : errJson.error?.message || "";
+        parsedMsg = sanitizeErrorMessage(raw);
     } catch {
-        // not JSON, use raw text
+        parsedMsg = sanitizeErrorMessage(errorText);
     }
 
     switch (res.status) {
         case 402:
-            throw new Error(
-                "Your OpenRouter account has insufficient credits. " +
-                "Please add credits at https://openrouter.ai/settings/credits to generate images."
-            );
+            console.error("[Image Gen] ⚠️  ADMIN ACTION REQUIRED: OpenRouter account has insufficient credits! Add credits at https://openrouter.ai/settings/credits");
+            throw new Error("Insufficient credits to generate. Please add credits to continue.");
         case 403:
             throw new Error(
-                `The model "${params.model}" is not available in your server's region. ` +
-                "Please try a different model (e.g. Google Nano Banana, FLUX.2, or Seedream)."
+                `This model is currently unavailable. Please try a different model.`
             );
         case 429:
             throw new Error(
-                "Image generation rate limit reached. Please wait a moment and try again."
+                "Too many image generation requests. Please wait a moment and try again."
             );
         case 401:
+            console.error("[Image Gen] ⚠️  ADMIN ACTION REQUIRED: OpenRouter API key is invalid or expired!");
             throw new Error(
-                "OpenRouter API key is invalid or expired. Please check your OPENROUTER_API_KEY configuration."
+                "Image generation service is temporarily unavailable. Please try again later."
             );
         case 400:
             throw new Error(
-                parsedMsg || `Bad request for model "${params.model}". Please try a different prompt or model.`
+                parsedMsg || `Something went wrong with this request. Please try a different prompt or model.`
             );
         default:
             throw new Error(
-                parsedMsg || `Image generation failed (HTTP ${res.status}). Please try again or use a different model.`
+                parsedMsg || `Image generation failed. Please try again or use a different model.`
             );
     }
 

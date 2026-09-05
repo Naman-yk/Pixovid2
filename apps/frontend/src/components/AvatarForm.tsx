@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ImageSlot } from "@/components/ImageSlot";
 import { createAvatar, type Avatar } from "@/lib/api";
+import { GenerationErrorAlert } from "@/components/GenerationErrorAlert";
 
 interface Props {
     onCreated: (avatar: Avatar) => void;
@@ -100,7 +101,7 @@ export function AvatarForm({ onCreated }: Props) {
                 </div>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <GenerationErrorAlert error={error} />
 
             <Button type="submit" size="lg" disabled={submitting} className="mt-1 w-full rounded-xl">
                 {submitting ? (

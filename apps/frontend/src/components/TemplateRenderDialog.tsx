@@ -25,6 +25,7 @@ import {
 } from "@/lib/api";
 import { refreshCredits } from "@/lib/useMe";
 import { useActionCosts } from "@/lib/useActionCosts";
+import { GenerationErrorAlert } from "@/components/GenerationErrorAlert";
 
 interface Props {
     template: Template;
@@ -167,7 +168,7 @@ export function TemplateRenderDialog({ template, open, onOpenChange, onRendered 
                             </div>
                         )}
 
-                        {error && <p className="text-sm text-destructive">{error}</p>}
+                        <GenerationErrorAlert error={error} />
 
                         <Button
                             size="lg"

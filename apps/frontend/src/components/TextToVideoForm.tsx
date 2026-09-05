@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { createVideo } from "@/lib/api";
+import { GenerationErrorAlert } from "@/components/GenerationErrorAlert";
 import type { Video } from "@/lib/api";
 
 export function TextToVideoForm({ onCreated }: { onCreated: (video: Video) => void }) {
@@ -36,7 +37,7 @@ export function TextToVideoForm({ onCreated }: { onCreated: (video: Video) => vo
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-xl border border-white/[0.08] bg-card p-4">
             <h3 className="font-semibold text-lg">Generate Video</h3>
             
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <GenerationErrorAlert error={error} />
             
             <div className="flex flex-col gap-2">
                 <Label htmlFor="model">Model</Label>

@@ -23,13 +23,6 @@ meRouter.get("/", requireAuth, async (req: AuthedRequest, res) => {
             where: { id: req.userId },
             data: { credits },
         });
-    } else if (credits === 0) {
-        // Welcome bonus for every user (enough for free video & image generations)
-        credits = 300;
-        await prisma.user.update({
-            where: { id: req.userId },
-            data: { credits },
-        });
     }
 
     res.json({

@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileField } from "@/components/FileField";
 import { createFaceSwap, type FaceSwap } from "@/lib/api";
+import { GenerationErrorAlert } from "@/components/GenerationErrorAlert";
 
 interface Props {
     onCreated: (swap: FaceSwap) => void;
@@ -52,7 +53,7 @@ export function FaceSwapForm({ onCreated }: Props) {
                     file={source}
                     onChange={setSource}
                 />
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                <GenerationErrorAlert error={error} />
                 <Button type="submit" disabled={submitting}>
                     {submitting ? (
                         <>

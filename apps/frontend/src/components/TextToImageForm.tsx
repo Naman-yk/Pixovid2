@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RefImageThumb } from "@/components/RefImageThumb";
+import { GenerationErrorAlert } from "@/components/GenerationErrorAlert";
 import {
     Select,
     SelectContent,
@@ -208,7 +209,7 @@ export function TextToImageForm({ onCreated }: Props) {
                 </div>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <GenerationErrorAlert error={error} />
 
             {/* Generate */}
             <Button type="submit" size="lg" disabled={submitting} className="mt-1 w-full rounded-xl">

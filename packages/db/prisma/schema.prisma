@@ -26,7 +26,7 @@ model User {
   role          String     @default("user")
   // Spendable credit balance. Topped up via Razorpay; spent on generations.
   // The CreditTransaction ledger is the audit trail; this is the live balance.
-  credits       Int        @default(300)
+  credits       Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   sessions      Session[]
