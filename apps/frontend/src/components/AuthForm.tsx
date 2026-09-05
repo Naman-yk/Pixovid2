@@ -71,10 +71,17 @@ export function AuthForm({ onSuccess, callbackURL }: AuthFormProps) {
 
     async function handleGoogle() {
         setError(null);
-        await signIn.social({
-            provider: "google",
-            callbackURL: callbackURL ?? window.location.origin,
-        });
+        try {
+            const res = await signIn.social({
+                provider: "google",
+                callbackURL: callbackURL ?? window.location.origin,
+            });
+            if (res && "error" in res && res.error) {
+                setError(res.error.message ?? "Google sign-in failed. Please check backend config.");
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to start Google sign-in");
+        }
     }
 
     return (
