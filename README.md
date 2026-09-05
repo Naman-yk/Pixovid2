@@ -1,159 +1,164 @@
-# Turborepo starter
 
-This Turborepo starter is maintained by the Turborepo core team.
+---
 
-## Using this example
+# 🎥 Pixovid — AI Video & Image Generation Studio
+For now razorpay is in test mode till my credentials got verified and every calling is charged for some time
 
-Run the following command:
 
-```sh
-npx create-turbo@latest
+> **Democratizing cinematic AI video creation.** Pixovid is an all-in-one generative AI media studio that combines prompt-to-video generation, face-fusion avatar replacement, multi-track template stitching, and a transaction-safe credit economy into a single web application.
+
+---
+
+## ✨ Key Features
+
+- 🎬 **Prompt-to-Video & Image Generation**: Orchestrates top-tier AI models (**Seedance 2.0, Kling V3, FLUX.2, Gemini 3.1**) with automatic fallback logic during provider outages.
+- 🎭 **AI Avatars & Hybrid Face Swapping**: Create custom identity avatars from photos. Supports both local pixel-level **FaceFusion** and cloud-based diffusion identity edits.
+- 🎼 **Multi-Track Premiere-Style Template Engine**: Author and render complex video templates featuring multi-clip timelines, audio lane mixing, link groups, and slot-based avatar placement.
+- 💳 **Credit Economy & Razorpay Billing**: Transaction-safe credit ledger (`CreditTransaction` + Neon DB) with automatic refunds on failed generations and Razorpay payment pack integration.
+- 🚀 **Bun Monorepo Architecture**: Lightning-fast build and development orchestration powered by **Turborepo, Express, React (Vite), Prisma, and Better-Auth**.
+
+---
+
+## 🏗️ Monorepo Structure
+
+```text
+pixovid/
+├── apps/
+│   ├── frontend/         # React + Vite + Tailwind CSS + Lucide Icons
+│   └── backend/          # Express API + Better-Auth + OpenRouter SDK + Razorpay
+├── packages/
+│   ├── db/               # Prisma ORM schema & Neon PostgreSQL connection
+│   ├── eslint-config/    # Shared ESLint rules
+│   └── typescript-config/# Shared tsconfig presets
+├── docker-compose.yaml   # Local dev services (MinIO object store, FaceFusion)
+└── turbo.json            # Turborepo task pipeline
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## ⚡ Tech Stack
 
-### Apps and Packages
+| Domain | Technology |
+| :--- | :--- |
+| **Runtime & Monorepo** | [Bun](https://bun.sh/), [Turborepo](https://turbo.build/) |
+| **Frontend** | React 18, Vite, Tailwind CSS, Lucide React, React Router |
+| **Backend API** | Node.js, Express, TypeScript |
+| **Authentication** | [Better-Auth](https://www.better-auth.com/) (Google OAuth + Email/Pass) |
+| **Database & ORM** | PostgreSQL ([Neon Serverless](https://neon.tech/)), [Prisma ORM](https://www.prisma.io/) |
+| **Storage** | MinIO / Cloudflare R2 / S3-compatible Object Storage |
+| **AI Providers** | OpenRouter (Video & Image models), Local/Cloud FaceFusion |
+| **Payments** | Razorpay (Credit Packs & Webhooks) |
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 🚀 Getting Started
 
-### Utilities
+### 1. Prerequisites
 
-This Turborepo has some additional tools already setup for you:
+Ensure you have the following installed on your machine:
+- **Bun** (v1.2+): `curl -fsSL https://bun.sh/install | bash`
+- **Node.js** (v20+)
+- **PostgreSQL Database** (e.g., Neon PostgreSQL)
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+---
 
-### Build
+### 2. Installation
 
-To build all apps and packages, run the following command:
+Clone the repository and install dependencies:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+git clone https://github.com/Naman-yk/Pixovid2.git
+cd Pixovid2
+bun install
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
+### 3. Environment Setup
+
+Create `.env` files in the root directory and `apps/backend/.env`:
+
+```env
+# ---- Database ----
+DATABASE_URL="postgresql://user:password@ep-host.neon.tech/neondb?sslmode=require"
+
+# ---- Auth ----
+BETTER_AUTH_SECRET="your-super-secret-key"
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# ---- OpenRouter AI ----
+OPENROUTER_API_KEY="sk-or-v1-your-key"
+OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
+
+# ---- Razorpay Billing ----
+RAZORPAY_KEY_ID="rzp_test_xxxxxx"
+RAZORPAY_KEY_SECRET="your-razorpay-secret"
+
+# ---- Storage (MinIO / R2) ----
+MINIO_ENDPOINT="your-storage-endpoint"
+MINIO_ACCESS_KEY="your-access-key"
+MINIO_SECRET_KEY="your-secret-key"
+MINIO_BUCKET="videoarena"
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+### 4. Database Sync
 
-```sh
-turbo build --filter=docs
+Push the Prisma schema to your database:
+
+```bash
+bunx prisma db push --schema packages/db/prisma/schema.prisma
 ```
 
-Without global `turbo`:
+---
 
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
+### 5. Running the Application
+
+Start the frontend and backend in parallel using Turborepo:
+
+```bash
+# Start all development servers
+bun run dev
 ```
 
-### Develop
+- **Frontend**: `http://localhost:5173`
+- **Backend API**: `http://localhost:4000`
 
-To develop all apps and packages, run the following command:
+---
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## 🛠️ Available Scripts
 
-```sh
-cd my-turborepo
-turbo dev
+| Command | Description |
+| :--- | :--- |
+| `bun run dev` | Runs frontend and backend in parallel with hot reloading |
+| `bun run build` | Builds all packages and apps for production |
+| `bun run lint` | Runs ESLint across all apps and packages |
+| `bun run format` | Formats codebase using Prettier |
+
+---
+
+## 🔒 Credit & Refund Economics
+
+Pixovid tracks credit spending through an append-only audit ledger (`CreditTransaction` table):
+
+```ts
+// Example: Safe transaction-backed deduction with automatic rollback
+await spendCredits(userId, cost, {
+  referenceType: "video",
+  referenceId: video.id,
+  description: "Video generation",
+});
 ```
 
-Without global `turbo`, use your package manager:
+- **Image Generation**: ~6 credits
+- **Video Generation**: ~60 credits
+- **Template Render**: ~1000 credits
+- **Automatic Refund**: If an AI provider returns an error or empty payload, credits are automatically refunded to the user's live balance.
 
-```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
-```
+---
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## 📄 License
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Distributed under the MIT License. See `LICENSE` for details.
