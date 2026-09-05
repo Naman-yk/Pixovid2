@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSession } from "@/lib/auth-client";
 import {
     fetchTemplateRenders,
@@ -12,7 +12,7 @@ import { MyTemplateRenders } from "@/components/MyTemplateRenders";
 import { SignedOut } from "@/components/SignedOut";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Film, Play, Sparkles, Wand2 } from "lucide-react";
+import { Play, Sparkles, Wand2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Static reel templates (served from /public/showcase/templates)     */
