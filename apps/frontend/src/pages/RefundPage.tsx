@@ -1,6 +1,6 @@
 import { LegalPage, LegalSection } from "@/components/LegalPage";
 
-const CONTACT_EMAIL = "harkirat.iitr@gmail.com";
+const CONTACT_EMAIL = "yuktarthnaman@gmail.com";
 
 export function RefundPage() {
     return (
