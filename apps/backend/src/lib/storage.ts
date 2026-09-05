@@ -54,7 +54,6 @@ export async function uploadBuffer(
     const key = `${prefix}/${randomUUID()}${ext}`;
     await minio.putObject(BUCKET, key, buffer, buffer.length, {
         "Content-Type": contentType,
-        "x-amz-acl": "public-read",
     });
     return key;
 

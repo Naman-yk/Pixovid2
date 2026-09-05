@@ -1,4 +1,5 @@
 import express from "express";
+import "express-async-errors";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
 import { prisma } from "@repo/db";

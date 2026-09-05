@@ -16,6 +16,10 @@ export function getApiUrl(): string {
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
         url = `https://${url}`;
     }
+    // Prevent Mixed Content errors by forcing https if the frontend is loaded over https
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http://") && !url.includes("localhost") && !url.includes("127.0.0.1")) {
+        url = url.replace("http://", "https://");
+    }
     return url;
 }
 
