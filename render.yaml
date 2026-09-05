@@ -18,7 +18,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://neondb_owner:npg_sJl4BtnRj2Ha@ep-fragrant-bonus-ayt19f57-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
       - key: BETTER_AUTH_SECRET
         generateValue: true
       - key: BACKEND_URL
