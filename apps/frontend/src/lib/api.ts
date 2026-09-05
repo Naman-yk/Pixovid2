@@ -1,4 +1,25 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+export function getApiUrl(): string {
+    let url = import.meta.env.VITE_API_URL;
+    if (!url || typeof url !== "string" || url.trim() === "") {
+        url = "http://localhost:4000";
+    }
+    // If running in browser on a production domain but VITE_API_URL is defaulted to localhost
+    if (
+        typeof window !== "undefined" &&
+        !window.location.hostname.includes("localhost") &&
+        !window.location.hostname.includes("127.0.0.1") &&
+        url.includes("localhost")
+    ) {
+        url = "https://pixovid-api-v2.onrender.com";
+    }
+    // Ensure protocol exists to prevent 'Invalid URL' crash in better-auth createAuthClient
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+        url = `https://${url}`;
+    }
+    return url;
+}
+
+export const API_URL = getApiUrl();
 
 /** Shared lifecycle status across videos, images, and face swaps. */
 export type GenerationStatus = "PENDING" | "IN_PROGRESS" | "COMPLETED" | "FAILED";
