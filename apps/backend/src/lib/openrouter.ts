@@ -156,7 +156,6 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
     const body: Record<string, unknown> = {
         model: params.model,
         prompt: params.prompt,
-
     };
     if (params.resolution && params.resolution !== "Auto") body.resolution = params.resolution;
     if (params.aspectRatio && params.aspectRatio !== "Auto") body.aspect_ratio = params.aspectRatio;
@@ -168,71 +167,83 @@ export async function generateImage(params: GenerateImageParams): Promise<Genera
         }));
     }
 
-    let primaryErrorDetail = "";
-
+    // --- Call OpenRouter ---
+    let res: Response;
     try {
-        const res = await fetch(`${BASE_URL}/images`, {
+        res = await fetch(`${BASE_URL}/images`, {
             method: "POST",
             headers: authHeaders(),
             body: JSON.stringify(body),
         });
-        if (res.ok) {
-            const json = (await res.json()) as ImageGenerationResponse;
-            const first = json.data?.[0];
-            if (first?.b64_json) {
-                const buffer = Buffer.from(first.b64_json, "base64");
-                return { buffer, contentType: detectImageContentType(buffer), cost: json.usage?.cost };
-            }
-            if (first?.url) {
-                const imageRes = await fetch(first.url);
-                if (imageRes.ok) {
-                    const buffer = Buffer.from(await imageRes.arrayBuffer());
-                    return {
-                        buffer,
-                        contentType: imageRes.headers.get("content-type") ?? detectImageContentType(buffer),
-                        cost: json.usage?.cost
-                    };
-                }
-            }
-        } else {
-            const errorText = await res.text().catch(() => "");
-            primaryErrorDetail = `OpenRouter API HTTP ${res.status}: ${errorText || res.statusText}`;
-            console.warn(`OpenRouter image generation returned HTTP ${res.status}: ${errorText}`);
-        }
-    } catch (err: any) {
-        primaryErrorDetail = err?.message || String(err);
-        console.warn("OpenRouter image generation failed, falling back to free provider:", err);
+    } catch (networkErr: any) {
+        console.error("[Image Gen] Network error calling OpenRouter:", networkErr);
+        throw new Error("Could not reach the image generation service. Please try again later.");
     }
 
-    // Free AI Fallback (Pollinations.ai — 100% free high-quality AI images)
-    console.log(`[Free AI Fallback] Generating image for prompt: "${params.prompt}"`);
-    const freeImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(params.prompt)}?width=1024&height=1024&nologo=true`;
+    // --- Success path ---
+    if (res.ok) {
+        const json = (await res.json()) as ImageGenerationResponse;
+        const first = json.data?.[0];
+        if (first?.b64_json) {
+            const buffer = Buffer.from(first.b64_json, "base64");
+            return { buffer, contentType: detectImageContentType(buffer), cost: json.usage?.cost };
+        }
+        if (first?.url) {
+            const imageRes = await fetch(first.url);
+            if (imageRes.ok) {
+                const buffer = Buffer.from(await imageRes.arrayBuffer());
+                return {
+                    buffer,
+                    contentType: imageRes.headers.get("content-type") ?? detectImageContentType(buffer),
+                    cost: json.usage?.cost
+                };
+            }
+        }
+        throw new Error("Image generation returned an empty result. Please try a different prompt.");
+    }
+
+    // --- Error path: parse OpenRouter error for user-friendly messages ---
+    const errorText = await res.text().catch(() => "");
+    console.error(`[Image Gen] OpenRouter HTTP ${res.status} for model ${params.model}: ${errorText}`);
+
+    let parsedMsg = "";
     try {
-        const fallbackRes = await fetch(freeImageUrl, {
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8"
-            }
-        });
-        if (fallbackRes.ok) {
-            const buffer = Buffer.from(await fallbackRes.arrayBuffer());
-            return {
-                buffer,
-                contentType: fallbackRes.headers.get("content-type") ?? "image/jpeg",
-                cost: 0,
-            };
-        } else {
-            console.warn(`Pollinations fallback returned HTTP ${fallbackRes.status}`);
-        }
-    } catch (fallbackErr) {
-        console.warn("Pollinations fallback failed:", fallbackErr);
+        const errJson = JSON.parse(errorText);
+        parsedMsg = typeof errJson.error === "string"
+            ? errJson.error
+            : errJson.error?.message || "";
+    } catch {
+        // not JSON, use raw text
     }
 
-    const detailMsg = primaryErrorDetail ? ` (${primaryErrorDetail})` : "";
-    throw new Error(`Image generation failed on primary and fallback providers${detailMsg}`);
-
-
-
+    switch (res.status) {
+        case 402:
+            throw new Error(
+                "Your OpenRouter account has insufficient credits. " +
+                "Please add credits at https://openrouter.ai/settings/credits to generate images."
+            );
+        case 403:
+            throw new Error(
+                `The model "${params.model}" is not available in your server's region. ` +
+                "Please try a different model (e.g. Google Nano Banana, FLUX.2, or Seedream)."
+            );
+        case 429:
+            throw new Error(
+                "Image generation rate limit reached. Please wait a moment and try again."
+            );
+        case 401:
+            throw new Error(
+                "OpenRouter API key is invalid or expired. Please check your OPENROUTER_API_KEY configuration."
+            );
+        case 400:
+            throw new Error(
+                parsedMsg || `Bad request for model "${params.model}". Please try a different prompt or model.`
+            );
+        default:
+            throw new Error(
+                parsedMsg || `Image generation failed (HTTP ${res.status}). Please try again or use a different model.`
+            );
+    }
 
 
 
