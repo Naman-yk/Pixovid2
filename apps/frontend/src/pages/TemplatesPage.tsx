@@ -12,7 +12,7 @@ import { MyTemplateRenders } from "@/components/MyTemplateRenders";
 import { SignedOut } from "@/components/SignedOut";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Play, Sparkles, Wand2 } from "lucide-react";
+import { Play, Scissors, Sparkles, Wand2 } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Static reel templates (served from /public/showcase/templates)     */
@@ -131,14 +131,14 @@ function ReelTemplateCard({ tpl }: { tpl: ReelTemplate }) {
                 <p className="mt-1 flex-1 text-xs leading-5 text-muted-foreground">
                     {tpl.description}
                 </p>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                     <Button
                         size="sm"
                         className="flex-1 rounded-full text-xs"
                         onClick={() => navigate("/user/avatar")}
                     >
                         <Sparkles className="mr-1 h-3 w-3" />
-                        Create with avatar
+                        Avatar
                     </Button>
                     <Button
                         variant="outline"
@@ -149,7 +149,17 @@ function ReelTemplateCard({ tpl }: { tpl: ReelTemplate }) {
                         }
                     >
                         <Wand2 className="mr-1 h-3 w-3" />
-                        Edit with AI
+                        AI edit
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        className="rounded-full text-xs"
+                        onClick={() => navigate("/stitch")}
+                        title="Open in multi-track FFmpeg stitcher"
+                    >
+                        <Scissors className="mr-1 h-3 w-3 text-primary" />
+                        Stitch
                     </Button>
                 </div>
             </div>
@@ -163,6 +173,7 @@ function ReelTemplateCard({ tpl }: { tpl: ReelTemplate }) {
 
 export function TemplatesPage() {
     const { data: session, isPending } = useSession();
+    const navigate = useNavigate();
     const [tab, setTab] = useState<"browse" | "library">("browse");
 
     const [templates, setTemplates] = useState<Template[]>([]);
@@ -222,25 +233,46 @@ export function TemplatesPage() {
                     Pick a template, choose your avatar, and we render you straight into
                     the scene — face, lighting and motion handled for you.
                 </p>
+                <div className="relative mt-4 flex items-center gap-3">
+                    <Button
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => navigate("/stitch")}
+                    >
+                        <Scissors className="mr-1.5 h-3.5 w-3.5" />
+                        Open Multi-Track Stitcher
+                    </Button>
+                </div>
             </div>
 
             {/* Tab bar */}
-            <div className="mb-6 flex items-center gap-5 border-b border-white/[0.08]">
-                <button
-                    className={tabClass(tab === "browse")}
-                    onClick={() => setTab("browse")}
+            <div className="mb-6 flex items-center justify-between border-b border-white/[0.08]">
+                <div className="flex items-center gap-5">
+                    <button
+                        className={tabClass(tab === "browse")}
+                        onClick={() => setTab("browse")}
+                    >
+                        Browse templates
+                    </button>
+                    <button
+                        className={tabClass(tab === "library")}
+                        onClick={() => {
+                            setTab("library");
+                            loadRenders();
+                        }}
+                    >
+                        My renders
+                    </button>
+                </div>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="mb-2 rounded-full border-primary/40 text-xs text-primary hover:bg-primary/10"
+                    onClick={() => navigate("/stitch")}
                 >
-                    Browse templates
-                </button>
-                <button
-                    className={tabClass(tab === "library")}
-                    onClick={() => {
-                        setTab("library");
-                        loadRenders();
-                    }}
-                >
-                    My renders
-                </button>
+                    <Scissors className="mr-1.5 h-3 w-3" />
+                    Stitch Studio
+                </Button>
             </div>
 
             <div className="min-h-[55vh]">

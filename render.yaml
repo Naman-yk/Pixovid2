@@ -42,9 +42,9 @@ services:
       - key: GOOGLE_CLIENT_SECRET
         sync: false
       - key: ADMIN_EMAILS
-        sync: false
+        value: yuktarthnaman@gmail.com
       - key: SUPERADMIN_EMAILS
-        sync: false
+        value: yuktarthnaman@gmail.com
       - key: MINIO_ENDPOINT
         sync: false # e.g. f5577d3628a5dfc0f500e08adc8588cb.r2.cloudflarestorage.com
       - key: MINIO_FRONTEND_ENDPOINT

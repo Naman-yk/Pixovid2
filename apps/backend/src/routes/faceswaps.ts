@@ -2,9 +2,10 @@ import { Router } from "express";
 import { prisma, type FaceSwap } from "@repo/db";
 import { z } from "zod";
 import { requireAuth, type AuthedRequest } from "../middlewares/requireAuth.js";
-import { extFromMime, upload } from "../lib/upload.js";
+import { extFromMime, upload, videoUpload } from "../lib/upload.js";
 import { getPublicUrl, uploadBuffer } from "../lib/storage.js";
 import { faceSwap } from "../lib/facefusion.js";
+import { faceSwapVideo } from "../lib/facefusion.js";
 
 
 export const faceSwapsRouter: Router = Router();
@@ -105,11 +106,6 @@ faceSwapsRouter.post(
             res.status(201).json(serializeFaceSwap(updated));
 
 
-
-
-
-
-
         } catch (err) {
             const message = err instanceof Error ? err.message : "Face swap failed";
             console.error("Face swap failed:", message);
@@ -121,10 +117,72 @@ faceSwapsRouter.post(
 
         }
 
-
-
-
-
     },
 
 );
+
+// ---------------------------------------------------------------------------
+// POST /video — Video face-swap (local FaceFusion, $0 cost)
+// ---------------------------------------------------------------------------
+// Accepts a face photo ("source") and a video file ("target"), swaps the face
+// onto every frame of the video using the local FaceFusion Docker container,
+// uploads the result to object storage, and returns the download URL.
+// No credits are deducted — this runs entirely on local hardware.
+faceSwapsRouter.post(
+    "/video",
+    requireAuth,
+    videoUpload.fields([
+        { name: "source", maxCount: 1 },
+        { name: "target", maxCount: 1 },
+    ]),
+    async (req: AuthedRequest, res) => {
+        const files = (req.files ?? {}) as Record<string, Express.Multer.File[] | undefined>;
+
+        const source = files.source?.[0];
+        const target = files.target?.[0];
+
+        if (!source || !target) {
+            res.status(400).json({ error: "Both a face image (source) and a video file (target) are required" });
+            return;
+        }
+
+        // Validate that the target is actually a video
+        const videoMimes = ["video/mp4", "video/webm", "video/quicktime"];
+        if (!videoMimes.includes(target.mimetype)) {
+            res.status(400).json({
+                error: `Target must be a video file (mp4/webm/mov). Got: ${target.mimetype}`,
+            });
+            return;
+        }
+
+        console.log(`[video-swap] Starting video face-swap for user ${req.userId}`);
+        console.log(`[video-swap] Source: ${source.originalname} (${source.mimetype}), Target: ${target.originalname} (${target.mimetype}, ${(target.size / 1024 / 1024).toFixed(1)}MB)`);
+
+        try {
+            const result = await faceSwapVideo(
+                { buffer: source.buffer, mimetype: source.mimetype, filename: source.originalname || "source.jpg" },
+                { buffer: target.buffer, mimetype: target.mimetype, filename: target.originalname || "target.mp4" },
+            );
+
+            // Upload swapped video to object storage (Cloudflare R2)
+            const ext = target.mimetype === "video/webm" ? "webm" : target.mimetype === "video/quicktime" ? "mov" : "mp4";
+            const outputKey = await uploadBuffer(result.buffer, result.contentType, "video-swaps", ext);
+            const outputUrl = getPublicUrl(outputKey);
+
+            console.log(`[video-swap] Success! Output: ${outputKey} (${(result.buffer.length / 1024 / 1024).toFixed(1)}MB)`);
+
+            res.status(201).json({
+                success: true,
+                outputUrl,
+                outputKey,
+                contentType: result.contentType,
+                sizeBytes: result.buffer.length,
+            });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Video face swap failed";
+            console.error("[video-swap] Failed:", message);
+            res.status(502).json({ error: message });
+        }
+    },
+);
+

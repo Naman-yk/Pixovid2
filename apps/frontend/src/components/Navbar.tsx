@@ -17,6 +17,7 @@ const NAV_LINKS: NavLink[] = [
     { to: "/video", label: "Video" },
     { to: "/image", label: "Image" },
     { to: "/user/templates", label: "Templates", badge: "New" },
+    { to: "/stitch", label: "Stitch", badge: "Timeline" },
     { to: "/user/avatar", label: "Avatar" },
 ];
 
@@ -26,9 +27,7 @@ export function Navbar() {
     const [authOpen, setAuthOpen] = useState(false);
     const location = useLocation();
 
-    const links: NavLink[] = me?.isAdmin
-        ? [...NAV_LINKS, { to: "/admin/template/create", label: "Admin" }]
-        : NAV_LINKS;
+    const links: NavLink[] = NAV_LINKS;
 
     return (
         <header className="sticky top-0 z-40 border-b border-white/10 bg-black">

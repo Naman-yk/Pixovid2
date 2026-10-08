@@ -28,6 +28,8 @@ export default function App() {
                         <Route path="/video" element={<VideoPage />} />
                         <Route path="/image" element={<ImagePage />} />
                         <Route path="/user/templates" element={<TemplatesPage />} />
+                        <Route path="/stitch" element={<AdminTemplateCreatePage />} />
+                        <Route path="/timeline" element={<AdminTemplateCreatePage />} />
                         <Route path="/user/avatar" element={<AvatarPage />} />
                         <Route path="/user/generations" element={<GenerationPage />} />
                         <Route path="/faceswaps" element={<FaceSwapPage />} />

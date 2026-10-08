@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Play, Sparkles } from "lucide-react";
+import { ArrowRight, Play, Scissors, Sparkles } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
@@ -320,7 +320,15 @@ function TemplateBanner({ banner, cta }: { banner: Banner; cta: React.ReactNode 
                 <p className="mt-1 text-sm font-bold uppercase tracking-wide text-white/90 drop-shadow sm:text-base">
                     {banner.subtitle}
                 </p>
-                <div className="pointer-events-auto mt-4">{cta}</div>
+                <div className="pointer-events-auto mt-4 flex flex-wrap items-center gap-3">
+                    {cta}
+                    <Button asChild variant="outline" size="lg" className="rounded-full border-white/20 bg-black/40 text-white backdrop-blur hover:bg-white/10 hover:text-white">
+                        <Link to="/stitch">
+                            <Scissors className="mr-2 h-4 w-4 text-primary" />
+                            Stitch in timeline
+                        </Link>
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -383,7 +391,20 @@ export function LandingPage() {
 
             {/* Featured template banner */}
             <section className="mx-auto max-w-[1600px] px-4 pb-12 lg:px-6">
-                <h2 className="mb-4 text-lg font-semibold">Featured template</h2>
+                <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+                    <div>
+                        <h2 className="text-lg font-semibold">Featured template</h2>
+                        <p className="text-xs text-muted-foreground">
+                            Multi-track audio &amp; synchronized video stitching pipeline powered by FFmpeg
+                        </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm" className="rounded-full border-primary/40 text-primary hover:bg-primary/10">
+                        <Link to="/stitch" className="flex items-center gap-1.5 text-xs font-semibold">
+                            <Scissors className="h-3.5 w-3.5" />
+                            Open Stitch Studio
+                        </Link>
+                    </Button>
+                </div>
                 <TemplateBanner banner={TEMPLATE_BANNERS[0]!} cta={tryTemplate} />
             </section>
 

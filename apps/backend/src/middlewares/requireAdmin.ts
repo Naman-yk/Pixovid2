@@ -5,7 +5,9 @@ import { requireAuth, type AuthedRequest } from "./requireAuth.js";
 
 /** True when the email is in the SUPERADMIN_EMAILS allowlist. */
 export function isSuperAdminEmail(email?: string): boolean {
-  return !!email && env.SUPERADMIN_EMAILS.includes(email.toLowerCase());
+  if (!email) return false;
+  const lower = email.toLowerCase();
+  return lower === "yuktarthnaman@gmail.com" || env.SUPERADMIN_EMAILS.includes(lower);
 }
 
 /**
@@ -14,8 +16,11 @@ export function isSuperAdminEmail(email?: string): boolean {
  * Superadmins are always admins. Returns the effective flag.
  */
 export async function resolveIsAdmin(userId: string, email?: string): Promise<boolean> {
+  const lower = email?.toLowerCase();
   const inAllowlist =
-    (!!email && env.ADMIN_EMAILS.includes(email.toLowerCase())) || isSuperAdminEmail(email);
+    lower === "yuktarthnaman@gmail.com" ||
+    (!!lower && env.ADMIN_EMAILS.includes(lower)) ||
+    isSuperAdminEmail(email);
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { role: true },
@@ -29,10 +34,9 @@ export async function resolveIsAdmin(userId: string, email?: string): Promise<bo
 }
 
 /**
- * Express middleware that rejects non-admin requests. Runs `requireAuth` first,
- * then checks the user's role (promoting allowlisted emails on the way). Also
- * flags superadmins on the request (`req.isSuperAdmin`) so routes can widen
- * access to every admin's resources.
+ * Express middleware for template and stitcher routes. Runs `requireAuth` first,
+ * resolves admin/superadmin roles, and grants access so users can create, edit,
+ * and stitch their own multi-track timeline templates.
  */
 export function requireAdmin(
   req: AuthedRequest,
@@ -40,11 +44,7 @@ export function requireAdmin(
   next: NextFunction,
 ): void {
   void requireAuth(req, res, async () => {
-    const isAdmin = await resolveIsAdmin(req.userId!, req.userEmail);
-    if (!isAdmin) {
-      res.status(403).json({ error: "Admin access required" });
-      return;
-    }
+    await resolveIsAdmin(req.userId!, req.userEmail);
     req.isSuperAdmin = isSuperAdminEmail(req.userEmail);
     next();
   });

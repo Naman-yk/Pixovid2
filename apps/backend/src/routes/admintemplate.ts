@@ -911,17 +911,20 @@ adminTemplatesRouter.post("/:id/export", requireAdmin, async (req: AuthedRequest
         res.status(400).json({ error: "Add at least one video block before exporting." });
         return;
     }
-    if (template.avatarIds.length === 0) {
-        res.status(400).json({ error: "Assign avatars to this template before exporting." });
+    const hasFaceSwap = template.blocks.some((b) => b.faceSwapStart || b.faceSwapEnd);
+    if (hasFaceSwap && template.avatarIds.length === 0) {
+        res.status(400).json({ error: "Assign avatars to this template before exporting (some blocks use face swap)." });
         return;
     }
 
     // The template's avatars belong to its creator (a superadmin may be exporting
     // another admin's template), so resolve + attribute the render to that user.
-    const avatars = await prisma.avatar.findMany({
-        where: { id: { in: template.avatarIds }, userId: template.creatorId },
-    });
-    if (avatars.length !== template.avatarIds.length) {
+    const avatars = template.avatarIds.length > 0
+        ? await prisma.avatar.findMany({
+            where: { id: { in: template.avatarIds }, userId: template.creatorId },
+        })
+        : [];
+    if (template.avatarIds.length > 0 && avatars.length !== template.avatarIds.length) {
         res.status(400).json({ error: "One or more of the template's avatars were not found." });
         return;
     }
@@ -933,7 +936,9 @@ adminTemplatesRouter.post("/:id/export", requireAdmin, async (req: AuthedRequest
             templateId: template.id,
             userId: template.creatorId,
             avatarIds: template.avatarIds,
-            avatars: { connect: template.avatarIds.map((id) => ({ id })) },
+            ...(template.avatarIds.length > 0
+                ? { avatars: { connect: template.avatarIds.map((id) => ({ id })) } }
+                : {}),
             status: "IN_PROGRESS",
         },
     });

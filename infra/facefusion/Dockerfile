@@ -3,7 +3,7 @@
 # Wraps the official FaceFusion CPU image (Gradio UI + CLI, no REST API) with a
 # tiny FastAPI server (server.py) that exposes the `headless-run` face swapper
 # over HTTP so the backend can call it like any other provider.
-FROM facefusion/facefusion:3.6.1-cpu
+FROM --platform=linux/amd64 facefusion/facefusion:3.6.1-cpu
 
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 

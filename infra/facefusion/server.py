@@ -69,6 +69,53 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+def _build_swap_command(
+    processors: list[str],
+    source_path: str,
+    target_path: str,
+    output_path: str,
+    *,
+    is_video: bool = False,
+) -> list[str]:
+    """Build the FaceFusion headless-run command for both image and video swaps."""
+    command = [
+        "python",
+        "facefusion.py",
+        "headless-run",
+        "--processors",
+        *processors,
+        "--face-swapper-model",
+        FACE_SWAPPER_MODEL,
+        "--face-swapper-pixel-boost",
+        FACE_SWAPPER_PIXEL_BOOST,
+        "--face-mask-types",
+        "box",
+        "occlusion",
+        "--face-mask-blur",
+        FACE_MASK_BLUR,
+        "--execution-providers",
+        "cpu",
+        "--source-paths",
+        source_path,
+        "--target-path",
+        target_path,
+        "--output-path",
+        output_path,
+    ]
+    if not is_video:
+        command += ["--output-image-quality", "100"]
+    else:
+        command += ["--output-video-quality", "90"]
+    if FACE_ENHANCER_ENABLED:
+        command += [
+            "--face-enhancer-model",
+            FACE_ENHANCER_MODEL,
+            "--face-enhancer-blend",
+            FACE_ENHANCER_BLEND,
+        ]
+    return command
+
+
 @app.post("/swap")
 async def swap(source: UploadFile = File(...), target: UploadFile = File(...)) -> FileResponse:
     with tempfile.TemporaryDirectory() as work_dir:
@@ -82,51 +129,11 @@ async def swap(source: UploadFile = File(...), target: UploadFile = File(...)) -
         with open(target_path, "wb") as f:
             f.write(await target.read())
 
-        # Max-likeness config: the newest high-res swapper (hyperswap) with full
-        # pixel boost, an occlusion mask so hair/hands over the face aren't
-        # overwritten, a tight mask blur so more of the swapped face survives at
-        # the edges, and lossless image output. The GFPGAN face enhancer is kept
-        # at a LOW blend (or disabled) so it restores detail WITHOUT averaging out
-        # the source person's features — see the env knobs above. CPU-only (no GPU
-        # on this host); slower per frame but we only swap a block's 1-2 still
-        # frames, so the cost is acceptable.
         processors = ["face_swapper"]
         if FACE_ENHANCER_ENABLED:
             processors.append("face_enhancer")
 
-        command = [
-            "python",
-            "facefusion.py",
-            "headless-run",
-            "--processors",
-            *processors,
-            "--face-swapper-model",
-            FACE_SWAPPER_MODEL,
-            "--face-swapper-pixel-boost",
-            FACE_SWAPPER_PIXEL_BOOST,
-            "--face-mask-types",
-            "box",
-            "occlusion",
-            "--face-mask-blur",
-            FACE_MASK_BLUR,
-            "--output-image-quality",
-            "100",
-            "--execution-providers",
-            "cpu",
-            "--source-paths",
-            source_path,
-            "--target-path",
-            target_path,
-            "--output-path",
-            output_path,
-        ]
-        if FACE_ENHANCER_ENABLED:
-            command += [
-                "--face-enhancer-model",
-                FACE_ENHANCER_MODEL,
-                "--face-enhancer-blend",
-                FACE_ENHANCER_BLEND,
-            ]
+        command = _build_swap_command(processors, source_path, target_path, output_path)
 
         try:
             result = subprocess.run(
@@ -150,4 +157,79 @@ async def swap(source: UploadFile = File(...), target: UploadFile = File(...)) -
         persisted.close()
 
     media_type = "image/png" if target_ext == "png" else "image/jpeg"
+    return FileResponse(persisted.name, media_type=media_type, filename=f"swap.{target_ext}")
+
+
+# ---------------------------------------------------------------------------
+# Video face-swap endpoint
+# ---------------------------------------------------------------------------
+# Same swap pipeline but processes every frame of a video file instead of a
+# single still image. Much slower (CPU-only) so the timeout is extended.
+
+VIDEO_SWAP_TIMEOUT_SECONDS = 30 * 60  # 30 minutes — videos can be SLOW on CPU
+
+
+def _video_extension(upload: UploadFile, default: str = "mp4") -> str:
+    name = upload.filename or ""
+    if "." in name:
+        return name.rsplit(".", 1)[1].lower()
+    mime_map = {"video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov"}
+    return mime_map.get(upload.content_type or "", default)
+
+
+@app.post("/swap-video")
+async def swap_video(
+    source: UploadFile = File(...),
+    target: UploadFile = File(...),
+) -> FileResponse:
+    """Swap the face from `source` (image) onto every frame of `target` (video).
+
+    - source: a face photo (jpg/png) — the face to apply
+    - target: a video file (mp4/webm/mov) — the video being modified
+    """
+    with tempfile.TemporaryDirectory() as work_dir:
+        source_ext = _extension(source)
+        source_path = os.path.join(work_dir, f"source.{source_ext}")
+        target_ext = _video_extension(target)
+        target_path = os.path.join(work_dir, f"target.{target_ext}")
+        output_path = os.path.join(work_dir, f"output.{target_ext}")
+
+        with open(source_path, "wb") as f:
+            f.write(await source.read())
+        with open(target_path, "wb") as f:
+            f.write(await target.read())
+
+        processors = ["face_swapper"]
+        if FACE_ENHANCER_ENABLED:
+            processors.append("face_enhancer")
+
+        command = _build_swap_command(
+            processors, source_path, target_path, output_path, is_video=True,
+        )
+
+        try:
+            result = subprocess.run(
+                command,
+                cwd=FACEFUSION_DIR,
+                capture_output=True,
+                text=True,
+                timeout=VIDEO_SWAP_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired:
+            raise HTTPException(
+                status_code=504,
+                detail="Video face swap timed out (video may be too long for CPU processing)",
+            )
+
+        if result.returncode != 0 or not os.path.exists(output_path):
+            detail = (result.stderr or result.stdout or "Video face swap failed").strip()[-2000:]
+            raise HTTPException(status_code=500, detail=detail)
+
+        persisted = tempfile.NamedTemporaryFile(suffix=f".{target_ext}", delete=False)
+        with open(output_path, "rb") as src:
+            persisted.write(src.read())
+        persisted.close()
+
+    mime_map = {"mp4": "video/mp4", "webm": "video/webm", "mov": "video/quicktime"}
+    media_type = mime_map.get(target_ext, "video/mp4")
     return FileResponse(persisted.name, media_type=media_type, filename=f"swap.{target_ext}")

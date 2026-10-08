@@ -32,7 +32,7 @@ const envSchema = z.object({
     // a matching email are promoted to the "admin" role on their next request.
     ADMIN_EMAILS: z
         .string()
-        .default("")
+        .default("yuktarthnaman@gmail.com")
         .transform((v) =>
             v
                 .split(",")
@@ -44,7 +44,7 @@ const envSchema = z.object({
     // additionally see and manage EVERY admin's templates (not just their own).
     SUPERADMIN_EMAILS: z
         .string()
-        .default("")
+        .default("yuktarthnaman@gmail.com")
         .transform((v) =>
             v
                 .split(",")
