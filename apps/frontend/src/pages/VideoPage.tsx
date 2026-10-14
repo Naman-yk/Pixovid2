@@ -6,6 +6,7 @@ import { fetchVideos, type Video } from "@/lib/api";
 import { TextToVideoForm } from "@/components/TextToVideoForm";
 import { MyVideos } from "@/components/MyVideos";
 import { SignedOut } from "@/components/SignedOut";
+import { getShowcaseUrl } from "@/lib/showcase";
 import { cn } from "@/lib/utils";
 
 type View = "intro" | "library";
@@ -89,7 +90,7 @@ function IntroPanel() {
                 >
                     <video
                         className="h-full w-full rounded-xl border-2 border-white/80 object-cover"
-                        src="/showcase/drift-racing.mp4"
+                        src={getShowcaseUrl("/showcase/drift-racing.mp4")}
                         autoPlay
                         muted
                         loop

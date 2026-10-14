@@ -5,6 +5,7 @@ import { fetchImages, type Image } from "@/lib/api";
 import { TextToImageForm } from "@/components/TextToImageForm";
 import { MyImages } from "@/components/MyImages";
 import { SignedOut } from "@/components/SignedOut";
+import { getShowcaseUrl } from "@/lib/showcase";
 import { cn } from "@/lib/utils";
 
 type View = "intro" | "library";
@@ -57,7 +58,7 @@ function IntroPanel() {
                     title="Write a prompt"
                     description="Describe the still, or drop reference images for style/identity."
                 >
-                    <img src="/showcase/stills/img-1.jpg" alt="" className="h-full w-full object-cover" />
+                    <img src={getShowcaseUrl("/showcase/stills/img-1.jpg")} alt="" className="h-full w-full object-cover" />
                 </Step>
                 <Step
                     badge="2"
@@ -83,10 +84,10 @@ function IntroPanel() {
                     description="Hit Generate to render — it lands in History."
                 >
                     <div className="grid h-full w-full grid-cols-2 gap-1 p-1">
-                        <img src="/showcase/stills/img-2.jpg" alt="" className="h-full w-full rounded-lg object-cover" />
-                        <img src="/showcase/stills/img-3.jpg" alt="" className="h-full w-full rounded-lg object-cover" />
-                        <img src="/showcase/stills/img-4.jpg" alt="" className="h-full w-full rounded-lg object-cover" />
-                        <img src="/showcase/stills/img-1.jpg" alt="" className="h-full w-full rounded-lg object-cover" />
+                        <img src={getShowcaseUrl("/showcase/stills/img-2.jpg")} alt="" className="h-full w-full rounded-lg object-cover" />
+                        <img src={getShowcaseUrl("/showcase/stills/img-3.jpg")} alt="" className="h-full w-full rounded-lg object-cover" />
+                        <img src={getShowcaseUrl("/showcase/stills/img-4.jpg")} alt="" className="h-full w-full rounded-lg object-cover" />
+                        <img src={getShowcaseUrl("/showcase/stills/img-1.jpg")} alt="" className="h-full w-full rounded-lg object-cover" />
                     </div>
                 </Step>
             </div>

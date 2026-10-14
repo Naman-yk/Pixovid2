@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getShowcaseUrl } from "@/lib/showcase";
 import { AuthForm } from "./AuthForm";
 
 interface AuthModalProps {
@@ -23,7 +24,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                     <div className="relative hidden md:block">
                         <video
                             className="h-full w-full object-cover"
-                            src="/showcase/apex-hunter.mp4"
+                            src={getShowcaseUrl("/showcase/apex-hunter.mp4")}
                             autoPlay
                             muted
                             loop

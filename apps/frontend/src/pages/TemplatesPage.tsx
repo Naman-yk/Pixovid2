@@ -13,6 +13,7 @@ import { SignedOut } from "@/components/SignedOut";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Play, Scissors, Sparkles, Wand2 } from "lucide-react";
+import { getShowcaseUrl } from "@/lib/showcase";
 
 /* ------------------------------------------------------------------ */
 /*  Static reel templates (served from /public/showcase/templates)     */
@@ -28,7 +29,7 @@ interface ReelTemplate {
     tags: string[];
 }
 
-const REEL_TEMPLATES: ReelTemplate[] = [
+const RAW_REEL_TEMPLATES: ReelTemplate[] = [
     {
         id: "reel-1",
         title: "Cinematic Intro",
@@ -61,6 +62,8 @@ const REEL_TEMPLATES: ReelTemplate[] = [
     },
 ];
 
+const REEL_TEMPLATES: ReelTemplate[] = RAW_REEL_TEMPLATES.map((t) => ({ ...t, src: getShowcaseUrl(t.src) }));
+
 /* ------------------------------------------------------------------ */
 /*  Reel template card                                                 */
 /* ------------------------------------------------------------------ */
@@ -84,7 +87,7 @@ function ReelTemplateCard({ tpl }: { tpl: ReelTemplate }) {
                     muted
                     loop
                     playsInline
-                    preload="metadata"
+                    preload="none"
                     onMouseEnter={(e) => {
                         e.currentTarget.muted = false;
                         void e.currentTarget.play();

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Play, Scissors, Sparkles } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
+import { getShowcaseUrl } from "@/lib/showcase";
 import { cn } from "@/lib/utils";
 
 /**
@@ -30,7 +31,7 @@ interface ShowcaseClip {
     src: string;
 }
 
-const SHOWCASE: ShowcaseClip[] = [
+const RAW_SHOWCASE: ShowcaseClip[] = [
     {
         title: "STORM GIANT",
         prompt:
@@ -168,6 +169,8 @@ const SHOWCASE: ShowcaseClip[] = [
     },
 ];
 
+const SHOWCASE: ShowcaseClip[] = RAW_SHOWCASE.map((c) => ({ ...c, src: getShowcaseUrl(c.src) }));
+
 const FEATURED = SHOWCASE.filter((c) => c.aspect === "landscape" || c.aspect === "square");
 
 const ASPECT_CLASS: Record<Aspect, string> = {
@@ -179,6 +182,30 @@ const ASPECT_CLASS: Record<Aspect, string> = {
 
 function Clip({ src, className, title }: { src: string; className?: string; title?: string }) {
     const [failed, setFailed] = useState(false);
+    const [inView, setInView] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                if (entry && entry.isIntersecting) {
+                    setInView(true);
+                    videoRef.current?.play().catch(() => {});
+                } else if (entry) {
+                    videoRef.current?.pause();
+                }
+            },
+            { rootMargin: "350px 0px" } // Starts streaming 350px before entering viewport
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     if (failed) {
         return (
@@ -189,16 +216,23 @@ function Clip({ src, className, title }: { src: string; className?: string; titl
     }
 
     return (
-        <video
-            className={className}
-            src={src}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onError={() => setFailed(true)}
-        />
+        <div ref={containerRef} className={cn("relative overflow-hidden bg-white/[0.02]", className)}>
+            {inView ? (
+                <video
+                    ref={videoRef}
+                    className="h-full w-full object-cover"
+                    src={src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="auto"
+                    onError={() => setFailed(true)}
+                />
+            ) : (
+                <div className="h-full w-full bg-white/[0.03]" />
+            )}
+        </div>
     );
 }
 
@@ -280,28 +314,55 @@ const TEMPLATE_BANNERS: Banner[] = [
         subtitle: "Your story, beautifully told",
         src: "/showcase/templates/boyfriend.mp4",
     },
-];
+].map((b) => ({ ...b, src: getShowcaseUrl(b.src) }));
 
 function TemplateBanner({ banner, cta }: { banner: Banner; cta: React.ReactNode }) {
     const [videoFailed, setVideoFailed] = useState(false);
+    const [inView, setInView] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const entry = entries[0];
+                if (entry && entry.isIntersecting) {
+                    setInView(true);
+                    videoRef.current?.play().catch(() => {});
+                } else if (entry) {
+                    videoRef.current?.pause();
+                }
+            },
+            { rootMargin: "350px 0px" }
+        );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     return (
-        <div className="group relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+        <div ref={containerRef} className="group relative overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
             {videoFailed ? (
                 <div className="flex aspect-[16/11] w-full items-center justify-center bg-gradient-to-br from-primary/15 via-card to-card sm:aspect-[16/6]">
                     <span className="text-sm font-bold uppercase tracking-widest text-primary/50">{banner.title}</span>
                 </div>
-            ) : (
+            ) : inView ? (
                 <video
+                    ref={videoRef}
                     className="aspect-[16/11] w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:aspect-[16/6]"
                     src={banner.src}
                     autoPlay
                     muted
                     loop
                     playsInline
-                    preload="metadata"
+                    preload="auto"
                     onError={() => setVideoFailed(true)}
                 />
+            ) : (
+                <div className="aspect-[16/11] w-full bg-white/[0.03] sm:aspect-[16/6]" />
             )}
             {/* Localized scrim only in the bottom-left corner — keeps most of the video bright. */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/80 via-black/15 to-transparent" />
