@@ -78,7 +78,7 @@ export function AudioClipInspector({ templateId, audioTrackCount, clip, onSaved,
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-1.5 text-sm font-semibold">
-                    <AudioLines className="h-4 w-4 text-emerald-500" /> Audio clip
+                    <AudioLines className="h-4 w-4 text-sky-400" /> Audio clip
                 </h3>
                 <Button variant="ghost" size="icon" onClick={handleDelete} title="Delete audio clip">
                     <Trash2 className="h-4 w-4" />

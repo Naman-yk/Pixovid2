@@ -662,7 +662,7 @@ export function BlockInspector({
                                     </figure>
                                 )}
                             </div>
-                            <p className="text-xs text-emerald-600">
+                            <p className="text-xs text-sky-400">
                                 Looks good? Bake reuses this swap — it won&apos;t regenerate. Not happy? Tweak the swap
                                 context and regenerate.
                             </p>
@@ -677,7 +677,7 @@ export function BlockInspector({
             )}
 
             {block.videoUrl && (
-                <p className="text-xs text-emerald-500">
+                <p className="text-xs text-sky-400">
                     This clip is baked — it plays in the preview monitor.
                 </p>
             )}

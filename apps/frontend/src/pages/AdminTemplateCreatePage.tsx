@@ -518,7 +518,7 @@ export function AdminTemplateCreatePage() {
                                     <Clock className="h-3 w-3 text-primary" />
                                     <span>Timecode · 30fps</span>
                                 </div>
-                                <span className="text-base font-black tracking-widest text-primary drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]">
+                                <span className="text-base font-black tracking-widest text-primary drop-shadow-[0_0_8px_rgba(145,224,255,0.5)]">
                                     00:00:14:28
                                 </span>
                             </div>
@@ -690,14 +690,14 @@ export function AdminTemplateCreatePage() {
                                         {/* Playhead Scrubber Handle & Line */}
                                         <div className="absolute left-[44%] top-0 bottom-0 z-20 flex flex-col items-center">
                                             <div className="h-2 w-3 bg-primary" style={{ clipPath: "polygon(0 0, 100% 0, 50% 100%)" }} />
-                                            <div className="h-full w-px bg-primary drop-shadow-[0_0_4px_rgba(163,230,53,0.8)]" />
+                                            <div className="h-full w-px bg-primary drop-shadow-[0_0_4px_rgba(145,224,255,0.8)]" />
                                         </div>
                                     </div>
 
                                     {/* Multi-Track Lanes Container */}
                                     <div className="relative space-y-1.5 p-3">
                                         {/* Playhead vertical laser line spanning across all track lanes */}
-                                        <div className="pointer-events-none absolute left-[44%] top-0 bottom-0 z-20 w-px bg-primary/70 shadow-[0_0_8px_#a3e635]" />
+                                        <div className="pointer-events-none absolute left-[44%] top-0 bottom-0 z-20 w-px bg-primary/70 shadow-[0_0_8px_#91E0FF]" />
 
                                         {/* Track V2: Overlay & Actor Face-Swap Lane */}
                                         <div className="flex h-14 items-center gap-2 rounded-xl border border-white/[0.06] bg-black/50 p-1.5">

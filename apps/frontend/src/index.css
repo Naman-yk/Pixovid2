@@ -3,10 +3,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Pixovid — Higgsfield-style theme.
- * Pure-black canvas, dark neutral surfaces, a signature electric-lime primary
- * CTA and a hot-pink secondary accent for "trending"/discount badges. No light
- * theme.
+ * Pixovid — Aquamarine / Sky Blue Theme (#91E0FF).
+ * Pure-black canvas, dark neutral surfaces, signature aquamarine (#91E0FF) primary
+ * CTA and accents.
  */
 :root,
 .dark {
@@ -16,9 +15,9 @@
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.08 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    /* Electric-lime CTA buttons on black — the Higgsfield signature. */
-    --primary: oklch(0.92 0.21 124);
-    --primary-foreground: oklch(0.18 0.02 124);
+    /* Aquamarine / Sky Blue (#91E0FF) CTA buttons on black */
+    --primary: oklch(0.87 0.095 225);
+    --primary-foreground: oklch(0.16 0.04 225);
     --secondary: oklch(0.18 0 0);
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.16 0 0);
@@ -29,11 +28,11 @@
     --destructive-foreground: oklch(0.98 0 0);
     --border: oklch(1 0 0 / 9%);
     --input: oklch(1 0 0 / 12%);
-    --ring: oklch(0.92 0.21 124);
+    --ring: oklch(0.87 0.095 225);
     --radius: 0.75rem;
 
-    /* Brand accents: electric lime + hot pink. */
-    --brand: oklch(0.92 0.21 124);
+    /* Brand accents: aquamarine (#91E0FF) */
+    --brand: oklch(0.87 0.095 225);
     --brand-2: oklch(0.66 0.24 357);
 }
 
@@ -91,9 +90,9 @@
     body {
         min-height: 100vh;
         background-color: var(--color-background);
-        /* Flat black canvas with a single faint lime glow at the top (Higgsfield). */
+        /* Flat black canvas with a single faint aquamarine / sky blue glow at the top. */
         background-image: radial-gradient(ellipse 70rem 30rem at 50% -10rem,
-                oklch(0.92 0.21 124 / 7%),
+                oklch(0.87 0.095 225 / 9%),
                 transparent 70%);
         background-attachment: fixed;
         background-repeat: no-repeat;
@@ -119,7 +118,7 @@
     }
 
     ::selection {
-        background-color: oklch(0.92 0.21 124 / 35%);
+        background-color: oklch(0.87 0.095 225 / 35%);
         color: oklch(0.99 0 0);
     }
 

@@ -901,7 +901,7 @@ export function Timeline({
                                             ? "border-destructive bg-destructive/20 ring-2 ring-destructive"
                                             : selectedAudioId === c.id
                                                 ? "border-primary bg-primary/20 ring-2 ring-primary"
-                                                : "border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25",
+                                                : "border-sky-500/40 bg-sky-500/15 hover:bg-sky-500/25",
                                     )}
                                     style={{
                                         left: c.startSec * PPS,
@@ -910,7 +910,7 @@ export function Timeline({
                                         height: AUDIO_LANE_H - 10,
                                     }}
                                 >
-                                    <Music className="h-3 w-3 shrink-0 text-emerald-500" />
+                                    <Music className="h-3 w-3 shrink-0 text-sky-400" />
                                     {isAudioCropped(c) && <Scissors className="h-3 w-3 shrink-0 text-muted-foreground" />}
                                     <span className="pointer-events-none truncate font-medium">{c.name || "Audio clip"}</span>
                                     {/* Crop (trim) handles */}
