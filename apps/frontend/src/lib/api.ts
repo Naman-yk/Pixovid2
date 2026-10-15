@@ -3,12 +3,18 @@ export function getApiUrl(): string {
     if (!url || typeof url !== "string" || url.trim() === "") {
         url = "http://localhost:4000";
     }
-    // If running in browser on a production domain but VITE_API_URL is defaulted to localhost or pixovid-api-v2
+    // If running in browser on a production domain (e.g. *.onrender.com)
+    // ensure public backend domain is used, not internal private Render service name or localhost
     if (
         typeof window !== "undefined" &&
         !window.location.hostname.includes("localhost") &&
         !window.location.hostname.includes("127.0.0.1") &&
-        (url.includes("localhost") || url.includes("pixovid-api-v2"))
+        (url.includes("localhost") ||
+            url.includes("pixovid-api-v2") ||
+            url === "pixovid-backend" ||
+            url === "https://pixovid-backend" ||
+            url === "http://pixovid-backend" ||
+            !url.includes("."))
     ) {
         url = "https://pixovid-backend.onrender.com";
     }

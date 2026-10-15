@@ -84,7 +84,4 @@ services:
     plan: free
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: pixovid-backend
-          property: host
+        value: https://pixovid-backend.onrender.com
